@@ -79,3 +79,88 @@ ELSE
 		PRINT @idade;
 		PRINT 'Está longe de se aposentar';
 	END 
+
+
+-- Calcular a idade correta de uma pessoa do banco
+DECLARE @dataNascimento DATE; 
+SET @nome = 'Maria'; 
+
+SELECT @dataNascimento = F.Datanasc
+FROM FUNCIONARIO AS F 
+WHERE @nome = F.Pnome;
+
+IF (MONTH(GETDATE()) < MONTH(@dataNascimento))
+	BEGIN 
+		SET @idade = DATEDIFF(YEAR, @dataNascimento, GETDATE()) - 1;
+	END 
+ELSE IF(MONTH(GETDATE()) = MONTH(@dataNascimento) AND DAY(GETDATE()) < DAY(@dataNascimento))
+	BEGIN
+		SET @idade = DATEDIFF(YEAR, @dataNascimento, GETDATE()) - 1;
+	END
+ELSE 
+	BEGIN 
+		SET @idade = DATEDIFF(YEAR, @dataNascimento, GETDATE());
+	END
+
+SELECT @idade AS Idade;
+
+-- Pegar todos os funcionarios e declarar se ele ganha bem ou pouco
+-- < 20.000 ganha pouco
+-- > 20.000 ganha bem 
+-- Utilizando IIF só consigo categorizar duas categorias 
+SELECT
+	F.Pnome,
+	F.Unome,
+	F.Salario,
+	IIF(F.Salario < 20000, 'Salário baixo', 'Salário alto') AS 'Categoria Salarial'
+FROM FUNCIONARIO AS F
+
+-- Pegar todos os funcionarios e declarar se ele ganha bem ou pouco com SWITCH CASE 
+-- > 0 AND < 10000 baixo
+-- < 30.000 medio
+-- > 30.000 ganha bem 
+SELECT
+	F.Pnome,
+	F.Unome,
+	F.Salario,
+	CASE 
+		WHEN F.Salario <= 10000 AND F.Salario > 0 THEN 'Baixo'
+		WHEN F.Salario > 10000 AND F.Salario <= 30000 THEN 'Médio'
+		WHEN F.Salario > 30000 THEN 'Alto'
+		ELSE 'Erro!'
+	END AS 'Categoria Salarial'
+FROM FUNCIONARIO AS F
+
+-- Laço de repetição 
+-- Loop While 
+-- Contagem de 1 a 9
+DECLARE @valor INT = 0
+-- SET @valor = 0 
+-- mesma coisa que declarar o valor da variávrl no início 
+
+WHILE @valor < 10
+	BEGIN 
+		SET @valor = @valor +1
+		IF(@valor % 2 = 0) 
+			CONTINUE
+		PRINT 'Número ' + CAST(@valor AS VARCHAR(2))
+	END 
+
+-- Cursores (não cobra na prova)
+DECLARE @nomes VARCHAR(50);
+
+DECLARE @cursorFuncionario CURSOR FOR 
+SELECT PNome FROM FUNCIONARIO;
+
+OPEN cursorFuncionario;
+
+FETCH NEXT FROM cursorFuncionario INTO @nome;
+
+WHILE @@FETCH_STATUS = 0
+	BEGIN 
+		PRINT @nome;
+		FETCH NEXT FROM cursorFuncionario INTO @nome
+	END
+
+CLOSE cursorFuncionario;
+DEALLOCATE cursorFuncionario;
