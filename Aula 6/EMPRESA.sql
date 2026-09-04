@@ -195,4 +195,3 @@ VALUES ('Vendas', 6),
 ('RH', 7),
 ('TI', 8);
 GO
-
