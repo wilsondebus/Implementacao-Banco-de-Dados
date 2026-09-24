@@ -1,0 +1,7 @@
+Revisão Prova - Implementação BD 
+
+Ordem crescente 
+ORDER BY ... ASC
+
+Ordem decrescente 
+ORDER BY ... DESC
