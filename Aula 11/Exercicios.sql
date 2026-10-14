@@ -1,0 +1,45 @@
+-- Atividades Aula 11 
+-- 09/10
+
+-- Exercícios
+-- 1) 
+USE EMPRESA; 
+
+GO 
+
+INSERT INTO DEPARTAMENTO (Dnome, Dnumero)
+VALUES ('DeptoAuto', 90);
+
+BEGIN TRAN 
+	INSERT INTO DEPARTAMENTO (Dnome, Dnumero)
+	VALUES ('DeptoNovo', 91);
+
+	SELECT * FROM DEPARTAMENTO
+	WHERE Dnumero IN (90, 91)
+
+	ROLLBACK TRAN 
+
+SELECT * FROM DEPARTAMENTO
+WHERE Dnumero IN (90, 91);
+
+GO 
+
+-- 2) 
+BEGIN TRAN 
+	INSERT INTO DEPARTAMENTO (Dnome, Dnumero)
+	VALUES ('DeptoUm', 92)
+
+	SAVE TRAN primeiroDepartamento;
+
+	INSERT INTO DEPARTAMENTO (Dnome, Dnumero)
+	VALUES ('DeptoDois', 93)
+
+	SELECT * FROM DEPARTAMENTO
+	WHERE Dnumero IN (92, 93) 
+
+	ROLLBACK TRAN primeiroDepartamento; 
+
+	COMMIT TRAN;
+
+SELECT * FROM DEPARTAMENTO 
+WHERE Dnumero IN (92, 93);
