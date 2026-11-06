@@ -177,3 +177,75 @@ SELECT * FROM Autor;
 -- Associa outro livro ao autor de ID 1
 INSERT INTO LivroAutor (fk_livro, fk_autor)
 VALUES ('9788578270698', 1);
+
+GO
+-- Exer 15
+-- Trigger que impede atualizar o título para um que contenha "proibido"
+CREATE OR ALTER TRIGGER trg_update_titulo_livro
+ON Livro
+AFTER UPDATE
+AS
+BEGIN
+    -- Verifica se o novo título contém a palavra "proibido"
+    IF EXISTS (
+        SELECT *
+        FROM inserted
+        WHERE titulo LIKE '%proibido%'
+    )
+    BEGIN
+        -- Restaura o título anterior do livro
+        UPDATE Livro
+        SET titulo = D.titulo
+        FROM Livro AS L
+        JOIN deleted AS D
+        ON L.isbn = D.isbn
+        WHERE L.isbn IN (
+            SELECT isbn
+            FROM inserted
+            WHERE titulo LIKE '%proibido%'
+        );
+
+        PRINT 'Título proibido! O título anterior foi restaurado.';
+    END
+END;
+GO
+
+DROP TRIGGER trg_insteadof_excluir_registro;
+GO
+-- Exer 11
+-- Crie um trigger que, quando um livro for excluído da tabela Livro, verifique se há
+-- outros livros escritos pelo mesmo autor e, se não, remova automaticamente o autor
+-- da tabela Autor.
+CREATE OR ALTER TRIGGER trg_verificar_quantidade
+ON LIVRO
+INSTEAD OF DELETE 
+AS
+BEGIN 
+	DECLARE @id_autor INT;
+
+	SELECT @id_autor = LA.fk_autor
+	FROM LivroAutor AS LA
+	JOIN deleted AS D
+	ON LA.fk_livro = D.isbn;
+
+	DELETE FROM LIVROAUTOR
+	WHERE fk_livro IN (SELECT isbn FROM deleted);
+
+	DELETE FROM LIVRO 
+	WHERE isbn IN (SELECT isbn FROM deleted);
+
+	IF NOT EXISTS (SELECT * FROM LivroAutor WHERE fk_autor = @id_autor)
+	BEGIN
+		DELETE FROM AUTOR 
+		WHERE id = @id_autor;
+
+		PRINT 'Autor excluido por não possuir mais livros';
+	END 
+END;
+
+GO 
+
+-- Exclui o livro e executa automaticamente o trigger
+DELETE FROM Livro
+WHERE isbn = '9788577343348';
+
