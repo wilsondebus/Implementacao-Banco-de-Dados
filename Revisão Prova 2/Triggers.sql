@@ -248,4 +248,43 @@ GO
 -- Exclui o livro e executa automaticamente o trigger
 DELETE FROM Livro
 WHERE isbn = '9788577343348';
+GO
 
+-- Exer 18
+-- Crie um trigger que registre automaticamente todas as atualizações de livros na
+-- tabela LogAtualizacaoLivros com detalhes sobre o livro atualizado, data e hora.
+CREATE TABLE LogAtualizacaoLivros (
+	log_id INT IDENTITY(1,1) PRIMARY KEY,
+	isbn VARCHAR(50),
+	titulo_antigo VARCHAR(50),
+	titulo_novo VARCHAR(50),
+	ano_antigo INT,
+	ano_novo INT,
+	data_hora DATETIME DEFAULT GETDATE()
+);
+GO
+CREATE OR ALTER TRIGGER trg_log_atualizacao_livros
+ON LIVRO
+AFTER UPDATE
+AS 
+BEGIN
+	INSERT INTO LogAtualizacaoLivros 
+	(isbn, titulo_antigo, titulo_novo, ano_antigo, ano_novo)
+	SELECT	I.isbn,
+			D.titulo,
+			I.titulo,
+			D.ano,
+			I.ano
+	FROM inserted AS I
+	JOIN deleted AS D
+	ON I.isbn = D.isbn
+END;
+GO
+
+-- Atualiza um livro
+UPDATE Livro
+SET titulo = 'Harry Potter - Nova Edição',
+    ano = 2026
+WHERE isbn = '8532512062';
+-- Verifica se a atualização foi registrada
+SELECT * FROM LogAtualizacaoLivros;
